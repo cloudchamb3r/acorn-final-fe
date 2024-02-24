@@ -1,5 +1,8 @@
+import { axiosClient } from "@components/AxiosClient";
 import styled from "@emotion/styled";
 import { Avatar, Badge, List, ListSubheader } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const UserInfoContainer = styled.div`
 background-color: #f2f3f5;
@@ -14,7 +17,7 @@ const AvatarBadge = styled(Badge)`
 `;
 
 const NicknameContainer = styled.div`
-    width: 75px;
+    width: auto;
     padding-left: 12px;
     font-size: 1.1rem;
     white-space: nowrap;
@@ -24,7 +27,7 @@ const NicknameContainer = styled.div`
 const UserBox = styled.div`
     display: flex;
     align-items: center;    
-    opacity: ${(props) => props.state === "오프라인" ? 0.5 : 1};
+    opacity: ${(props) => props.status === "offline" ? 0.5 : 1};
 `;
 
 const RList = styled(List)`
@@ -32,45 +35,26 @@ const RList = styled(List)`
     &::-webkit-scrollbar{
         width:0px;
     }
-
 `;
 
-const handleStatusColor = (state) => {
-    if (state === "온라인") return "success";
-    if (state === "자리 비움") return "secondary";
-    if (state === "방해 금지") return "error";
-
-    // switch (state) {
-    //     case "온라인":
-    //         return "success";
-    //     case "자리 비움":
-    //         return "secondary";
-    //     case "방해 금지":
-    //         return "error";
-    //     default:
-    //         return;
-    // }
+const handleStatusColor = (status) => {
+    if (status === "online") return "success";
+    if (status === "idle") return "secondary";
+    if (status === "do not disturb") return "error";
+    if (status === "invisible") return "info";
 };
 
 const UserInfo = () => {
-    const dummyUser = [
-        { nickname: "user01", state: "온라인" },
-        { nickname: "user02", state: "자리 비움" },
-        { nickname: "user03", state: "온라인" },
-        { nickname: "user04", state: "오프라인" },
-        { nickname: "user05", state: "온라인" },
-        { nickname: "user06", state: "온라인" },
-        { nickname: "user07", state: "자리 비움" },
-        { nickname: "user08", state: "오프라인" },
-        { nickname: "user09", state: "방해 금지" },
-        { nickname: "user10", state: "온라인" },
-        { nickname: "user11", state: "온라인" },
-        { nickname: "user12", state: "자리 비움" },
-        { nickname: "user13", state: "방해 금지" },
-        { nickname: "user14", state: "온라인" },
-        { nickname: "user15", state: "온라인" },
-        { nickname: "user16", state: "자리 비움" },
-    ];
+    const { channelId } = useParams();
+    const [memberList, setMemberList] = useState([]);
+    useEffect(() => {
+        (async () => {
+            // const { data: memberList } = axiosClient.get(`/channel/${channelId}/member`);
+            const { data: members } = await axiosClient.get(`/channel/${channelId}/member`);
+            members.map(e => console.log(`members: ${members.length} || list: ${e.nickname} || status: ${e.status}`));
+            setMemberList(members);
+        })();
+    }, [channelId, setMemberList]);
 
     return (
         <UserInfoContainer>
@@ -86,19 +70,19 @@ const UserInfo = () => {
                 }}
                 subheader={<li />}
             >
-                {["온라인", "오프라인"].map((isOnline, index) => (
+                {["online", "offline"].map((isOnline, index) => (
                     <li key={`section-${index}`}>
                         <ul>
-                            <ListSubheader>{`${isOnline} - ${dummyUser.filter((e) => index ? e.state === "오프라인" : e.state !== "오프라인").length}`}</ListSubheader>
-                            {dummyUser.map((user, idx) => {
-                                if ((isOnline === "온라인" && user.state !== "오프라인") || (isOnline === "오프라인" && user.state === "오프라인"))
+                            <ListSubheader>{`${isOnline} - ${memberList.filter((e) => index ? e.status === "offline" : e.status !== "offline").length}`}</ListSubheader>
+                            {memberList.map((user, idx) => {
+                                if ((isOnline !== "offline" && user.status !== "offline") || (isOnline === "offline" && user.status === "offline"))
                                     return (
-                                        <UserBox key={`user-${idx}`} state={user.state}>
+                                        <UserBox key={`user-${idx}`} status={user.status}>
                                             <AvatarBadge
                                                 overlap="circular"
                                                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                                                 variant="dot"
-                                                color={handleStatusColor(user.state)}
+                                                color={handleStatusColor(user.status)}
                                             >
                                                 <Avatar sx={{ width: "32px", height: "32px" }} />
                                             </AvatarBadge>
