@@ -53,34 +53,49 @@ const EmojiPopOver = styled(Popover)`
 `;
 
 const ChannelMainMessageInput = ({ placeholder }) => {
+    const [fileUploadModalAnchor, setFileUploadModalAnchor] = useState(null);
+    const [emojiModalAnchor, setEmojiModalAnchor] = useState(null);
+
     const { nickname, hashtag } = useContext(MemberContext);
     const { sendJsonMessageOnWebSocket, lastJsonMessageOnWebSocket, setMessages } = useContext(ChannelContext);
     const [message, setMessage] = useState("");
-    const [emojiOpen, setEmojiOpen] = useState(false);
-    const [uploadFile, setUploadFile] = useState(false);
+
 
     useEffect(() => {
         if (lastJsonMessageOnWebSocket) {
-            const { author, content, createdAt } = lastJsonMessageOnWebSocket;
-            setMessages(msgs => [...msgs, {
-                author,
-                content,
-                createdAt,
-            }]);
+            const { body } = lastJsonMessageOnWebSocket;
+            if (body === null) return;
+            console.log(JSON.stringify(body));
+            const { job, messageDto } = body;
+            const { id, author, content, createdAt } = messageDto;
 
+            if (job === "insert") {
+                setMessages(msgs => [...msgs, {
+                    id,
+                    author,
+                    content,
+                    createdAt,
+                }]);
+            }
+            if (job === "update") {
+                setMessages(msgs => msgs.map(msg => {
+                    if (msg.id === id) {
+                        return {
+                            id, author, content, createdAt
+                        };
+                    }
+                    return msg;
+                }));
+            }
+            if (job === "delete") {
+                console.log(`receive delete message => ${id}`);
+                setMessages(msgs => msgs.filter(msg => msg.id !== id));
+            }
         }
     }, [lastJsonMessageOnWebSocket, setMessages]);
 
     const emojiClick = ({ emoji }) => {
         setMessage((msg) => msg + emoji);
-    };
-
-    const handleClickInside = (e) => {
-        e.stopPropagation();
-    };
-
-    const handlePopoverClose = () => {
-        setEmojiOpen(false);
     };
 
     /**
@@ -92,47 +107,71 @@ const ChannelMainMessageInput = ({ placeholder }) => {
             e.preventDefault();
             if (message) {
                 sendJsonMessageOnWebSocket({
-                    author: {
-                        nickname,
-                        hashtag
-                    },
-                    content: message,
+                    job: "insert",
+                    messageDto: {
+                        author: {
+                            nickname,
+                            hashtag
+                        },
+                        content: message,
+                    }
                 });
                 setMessage("");
             }
             return;
         }
     };
+    const handleOpenFileUploadModal = (e) => {
+        setFileUploadModalAnchor(e.currentTarget);
+    };
 
+    const handleCloseFileUploadModal = () => {
+        setFileUploadModalAnchor(null);
+    };
+
+    const handleOpenEmojiModal = (e) => {
+        setEmojiModalAnchor(e.currentTarget);
+    };
+
+    const handleCloseEmojiModal = () => {
+        setEmojiModalAnchor(null);
+    };
+
+    const openFileUploadModal = Boolean(fileUploadModalAnchor);
+    const openEmojiModal = Boolean(emojiModalAnchor);
     return (
         <ChannelMainMessageInputContainer>
             <ChannelMainMessageInputContent>
-                <IconButton disableRipple onClick={() => setUploadFile(status => !status)} >
+                <IconButton disableRipple onClick={handleOpenFileUploadModal} >
                     <AddCircle fontSize="large" />
-
-                    <Popover open={uploadFile} anchorReference="anchorPosition"
-                        anchorPosition={{ top: 760, left: 335 }}>
-                        <FileUploadForm>
-                            <FileUploadFormInner>파일 업로드</FileUploadFormInner>
-                        </FileUploadForm>
-                    </Popover>
                 </IconButton>
-
                 <Input fullWidth disableUnderline multiline
                     placeholder={placeholder}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={keyDownHandler} />
-
-                <IconButton disableRipple onClick={() => setEmojiOpen(status => !status)}>
+                <IconButton disableRipple onClick={handleOpenEmojiModal}>
                     <EmojiEmotions fontSize="large" />
-                    <EmojiPopOver open={emojiOpen} anchorReference="anchorPosition"
-                        anchorPosition={{ top: 380, left: 1454 }} onClick={handleClickInside} onClose={handlePopoverClose}>
-                        <EmojiPicker open={true} onEmojiClick={emojiClick} />
-                    </EmojiPopOver>
-
                 </IconButton>
             </ChannelMainMessageInputContent>
+
+            <Popover
+                open={openFileUploadModal}
+                onClose={handleCloseFileUploadModal}
+                anchorEl={fileUploadModalAnchor}
+                anchorOrigin={{ vertical: -80, horizontal: "left" }}>
+                <FileUploadForm>
+                    <FileUploadFormInner>파일 업로드</FileUploadFormInner>
+                </FileUploadForm>
+            </Popover>
+
+            <EmojiPopOver
+                open={openEmojiModal}
+                onClose={handleCloseEmojiModal}
+                anchorEl={emojiModalAnchor}
+                anchorOrigin={{ vertical: -460, horizontal: "right" }}>
+                <EmojiPicker open={true} onEmojiClick={emojiClick} />
+            </EmojiPopOver>
         </ChannelMainMessageInputContainer >
     );
 };

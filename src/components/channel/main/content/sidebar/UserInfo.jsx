@@ -1,8 +1,7 @@
-import { axiosClient } from "@components/AxiosClient";
+import { ChannelContext } from "@contexts/ChannelContext";
 import styled from "@emotion/styled";
 import { Avatar, Badge, List, ListSubheader } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 
 const UserInfoContainer = styled.div`
 background-color: #f2f3f5;
@@ -41,20 +40,16 @@ const handleStatusColor = (status) => {
     if (status === "online") return "success";
     if (status === "idle") return "secondary";
     if (status === "do not disturb") return "error";
-    if (status === "invisible") return "info";
 };
 
 const UserInfo = () => {
-    const { channelId } = useParams();
-    const [memberList, setMemberList] = useState([]);
+    const { channelUsers } = useContext(ChannelContext);
+    const [ members, setMembers ] = useState([]);
+
     useEffect(() => {
-        (async () => {
-            // const { data: memberList } = axiosClient.get(`/channel/${channelId}/member`);
-            const { data: members } = await axiosClient.get(`/channel/${channelId}/member`);
-            members.map(e => console.log(`members: ${members.length} || list: ${e.nickname} || status: ${e.status}`));
-            setMemberList(members);
-        })();
-    }, [channelId, setMemberList]);
+        if (!channelUsers) return;
+        setMembers(channelUsers);
+    }, [channelUsers, setMembers]);
 
     return (
         <UserInfoContainer>
@@ -70,25 +65,23 @@ const UserInfo = () => {
                 }}
                 subheader={<li />}
             >
-                {["online", "offline"].map((isOnline, index) => (
+                {["offline", "online"].map((isOnline, index) => (
                     <li key={`section-${index}`}>
                         <ul>
-                            <ListSubheader>{`${isOnline} - ${memberList.filter((e) => index ? e.status === "offline" : e.status !== "offline").length}`}</ListSubheader>
-                            {memberList.map((user, idx) => {
-                                if ((isOnline !== "offline" && user.status !== "offline") || (isOnline === "offline" && user.status === "offline"))
-                                    return (
-                                        <UserBox key={`user-${idx}`} status={user.status}>
-                                            <AvatarBadge
-                                                overlap="circular"
-                                                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                                variant="dot"
-                                                color={handleStatusColor(user.status)}
-                                            >
-                                                <Avatar sx={{ width: "32px", height: "32px" }} />
-                                            </AvatarBadge>
-                                            <NicknameContainer>{user.nickname}</NicknameContainer>
-                                        </UserBox>
-                                    );
+                            <ListSubheader>{`${isOnline} - ${members.filter((e) => index ? e.status !== "offline" : e.status === "offline").length}`}</ListSubheader>
+                            {members.map((user, idx) => {
+                                return (isOnline === "offline" && user.status === "offline") || (isOnline !== "offline" && user.status !== "offline") &&
+                                    (<UserBox key={`user-${idx}`} status={user.status}>
+                                        <AvatarBadge
+                                            overlap="circular"
+                                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                            variant="dot"
+                                            color={handleStatusColor(user.status)}
+                                        >
+                                            <Avatar sx={{ width: "32px", height: "32px" }} />
+                                        </AvatarBadge>
+                                        <NicknameContainer>{user.nickname}</NicknameContainer>
+                                    </UserBox>);
                             })}
                         </ul>
                     </li>

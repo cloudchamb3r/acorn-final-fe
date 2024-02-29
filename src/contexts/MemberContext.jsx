@@ -1,4 +1,4 @@
-import { axiosClient } from "@components/AxiosClient";
+import { axiosClient } from "@configs/AxiosClient";
 import { getWsBaseUrl } from "@configs/env";
 import PropTypes from "prop-types";
 import { createContext, useEffect, useState } from "react";
@@ -23,6 +23,15 @@ const MemberContext = createContext({
 });
 
 const MemberContextProvider = ({ children }) => {
+    /**
+     * array of channels
+     * 
+     * channels {
+     *  id: number
+     *  name: string
+     *  thumbnail: string
+     * }
+     */
     const [channels, setChannels] = useState([]);
     const [nickname, setNickname] = useState("admin");
     const [hashtag, setHashtag] = useState(7777);
