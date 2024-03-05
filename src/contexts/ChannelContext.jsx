@@ -78,6 +78,10 @@ const ChannelContextProvider = ({ children }) => {
         setChannelUsers(webSocketChannelMemberStatus);
     }, [webSocketChannelMemberStatus, setChannelUsers]);
 
+    useEffect(() => {
+        setChannelUsers(webSocketChannelMemberStatus);
+    }, [webSocketChannelMemberStatus, setChannelUsers]);
+    
     return (
         <ChannelContext.Provider value={{
             topics,
