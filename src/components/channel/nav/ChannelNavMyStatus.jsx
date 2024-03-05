@@ -1,4 +1,5 @@
-import { MyPage } from "@components/MyPage/MyPage";
+
+import { MySetting } from "@components/my-setting/MySetting";
 import { MemberContext } from "@contexts/MemberContext";
 import styled from "@emotion/styled";
 import { HeadsetMic, HeadsetOff, Mic, MicOff, Settings } from "@mui/icons-material";
@@ -60,7 +61,7 @@ const StatusContainer = styled.div`
 
 
 const ChannelNavMyStatus = () => {
-    const { nickname, status, micEnabled, soundEnabled, setMicEnabled, setSoundEnabled } = useContext(MemberContext);
+    const { nickname, email, status, micEnabled, soundEnabled, setMicEnabled, setSoundEnabled } = useContext(MemberContext);
     const [open, setOpen] = useState(false);
     const handleClose = () => setOpen(false);
 
@@ -82,6 +83,7 @@ const ChannelNavMyStatus = () => {
                 </AvatarBadge>
                 <NickStatusBox>
                     <NicknameContainer>{nickname}</NicknameContainer>
+                    <NicknameContainer>{email}</NicknameContainer>
                     <StatusContainer>{status}</StatusContainer>
                 </NickStatusBox>
             </MyInfoGroup>
@@ -98,8 +100,7 @@ const ChannelNavMyStatus = () => {
             </MySettingGroup>
             <Modal open={open} onClose={handleClose}>
                 <>
-                    {/** TODO: MyPage가 아닌 다른 이름으로 변경 필요 */}
-                    <MyPage />
+                    <MySetting onClose={handleClose} />
                 </>
             </Modal>
         </ChannelNavMyStatusContainer>

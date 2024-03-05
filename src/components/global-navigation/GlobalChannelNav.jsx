@@ -2,6 +2,7 @@
 import { BaseContainer } from "@components/basis/BaseContainer";
 import { CreateChannel } from "@components/global-navigation/CreateChannel";
 import { GlobalChannelNavItem } from "@components/global-navigation/GlobalChannelNavItem";
+import { GlobalChannelNavMyPageItem } from "@components/global-navigation/GlobalChannelNavMyPageItem";
 import { MemberContext } from "@contexts/MemberContext";
 import { Divider, List } from "@mui/material";
 import { Popover } from "@mui/material";
@@ -9,14 +10,11 @@ import { Button } from "@mui/material";
 import { styled } from "@mui/system";
 import { useContext, useState } from "react";
 
-
-
 const GlobalChannelNavContainer = styled(BaseContainer)`
     min-width: 72px;
     max-width: 72px;
     background-color: #e2e4e7;
     overflow: auto;
-
 
     /** hidden scrollbar  **/
     &::-webkit-scrollbar {
@@ -40,20 +38,18 @@ const CreateChannelButton = styled(Button)`
     border-radius: 50%;
     min-width: 40px;
     left:22%;
-    background-color: gray;
+    background-color: #bdbdbd;
     margin-top:10px;
     font-size: 26px;
-    color: #1bc01b;
+    color: #18a518;
     text-align: center;
     &:hover {
         border-radius: 10px;
         transition: border-radius 0.3s ease-in-out;
         color: white;
-        background-color: #1bc01b;
+        background-color: #18a518;
     }
-    
 `;
-
 
 const GlobalChannelNav = () => {
     const { channels } = useContext(MemberContext);
@@ -73,20 +69,13 @@ const GlobalChannelNav = () => {
     return (
         <GlobalChannelNavContainer>
             <GlobalChannelNavList>
-                <GlobalChannelNavItem channel={
-                    {
-                        id: "@me",
-                        name: "mypage"
-                    }
-                } />
+                <GlobalChannelNavMyPageItem />
                 <Divider sx={{ margin: "0 16px", borderWidth: "1px" }} />
                 {
-                    channels.map((c, idx) => <GlobalChannelNavItem key={idx} channel={c} />)
+                    channels?.map((c, idx) => <GlobalChannelNavItem key={idx} channel={c} />)
                 }
                 <CreateChannelButton onClick={handleOpenCreateModal}>+</CreateChannelButton>
             </GlobalChannelNavList>
-
-
 
             <Popover
                 open={openCreateModal}

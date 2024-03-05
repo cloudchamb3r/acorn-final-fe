@@ -1,24 +1,32 @@
+import { SecureComponent } from "@components/SecureComponent";
+import { AppContextProvider } from "@contexts/AppContextProvider";
 import { ChannelPage } from "@pages/ChannelPage";
 import { InvitePage } from "@pages/InvitePage";
 import { LoginPage } from "@pages/LoginPage";
+import { MyChannelPage } from "@pages/MyChannelPage";
 import { NotFoundPage } from "@pages/NotFoundPage";
 import { RtcTestPage } from "@pages/RtcTestPage";
-import React from "react";
+import { SignupPage } from "@pages/SignupPage";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <BrowserRouter>
+    // <React.StrictMode>
+    <BrowserRouter>
+        <AppContextProvider>
             <Routes>
-                <Route path="/invite/:inviteId" element={<InvitePage />} />
-                <Route path="/channel/:channelId/topic/:topicId" element={<ChannelPage />} />
-                <Route path="/rtc" element={<RtcTestPage />} />
-                <Route path="/404" element={<NotFoundPage />} />
+                <Route path="/channel/@me" element={<SecureComponent val={<MyChannelPage />} />} />
+                <Route path="/channel/:channelId" element={<SecureComponent val={<ChannelPage />} />} />
+                <Route path="/channel/:channelId/topic/:topicId" element={<SecureComponent val={<ChannelPage />} />} />
+                <Route path="/invite/:inviteCode" element={<SecureComponent val={<InvitePage />} />} />
+                <Route path="/signup" element={<SecureComponent val={<SignupPage />} />} />
+                <Route path="/" element={<SecureComponent val={<MyChannelPage />} />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="*" element={<Navigate to="/channel/1/topic/1" />} />
+                <Route path="/rtc" element={<RtcTestPage />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
-        </BrowserRouter>
-    </React.StrictMode>,
+        </AppContextProvider>
+    </BrowserRouter>
+    // </React.StrictMode>
 );
