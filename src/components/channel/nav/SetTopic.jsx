@@ -14,7 +14,7 @@ const CreateChannelContainer = styled.div`
 `;
 
 const SetTopic = ({ handleClose }) => {
-    const { currentChannel, currentTopic, setCurrentTopic } = useContext(ChannelContext);
+    const { currentChannel, currentTopic, setTopics } = useContext(ChannelContext);
     const [title, setTitle] = useState(currentTopic.title || "");
     const navigate = useNavigate();
 
@@ -23,12 +23,15 @@ const SetTopic = ({ handleClose }) => {
     };
 
     const ChangeTopicName = async () => {
-        const { data } = await axiosClient.patch(`/channel/${currentChannel.id}/topic/${currentTopic.id}`, {
+        const { data : updatedTopic } = await axiosClient.patch(`/channel/${currentChannel.id}/topic/${currentTopic.id}`, {
             id: currentTopic.id,
             title: title
         });
-        setCurrentTopic(data);
-        navigate(`/channel/${currentChannel.id}/topic/${currentTopic.id}`);
+
+        setTopics((topics) => topics.map(topic => {
+            if (topic.id === updatedTopic.id) return updatedTopic;
+            return topic;
+        }));
         handleClose();
     };
 
